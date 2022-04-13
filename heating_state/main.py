@@ -146,12 +146,11 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    # gspread_credentials = json.loads(os.environ["GSPREAD_SA"])
-
-    with open(
-        "/Users/michalcyprian/.config/gspread/heating-state-cd26626d379f.json"
-    ) as creds_fi:
-        gspread_credentials = json.loads(creds_fi.read())
+    gspread_credentials = json.loads(os.environ["GSPREAD_SA"])
+    gspread_credentials_private_key = os.environ["GSPREAD_SA_KEY"]
+    gspread_credentials["private_key"] = gspread_credentials_private_key.replace(
+        "\\n", "\n"
+    )
 
     service_account = gspread.service_account_from_dict(gspread_credentials)
 

@@ -4,7 +4,6 @@ import asyncio
 import enum
 import json
 import os
-from dataclasses import dataclass
 from functools import lru_cache
 from pprint import pprint
 from typing import Any
@@ -14,6 +13,7 @@ import gspread
 
 from fastapi import FastAPI
 
+from .models import DeviceStateWriter
 
 BASE_API_URL = "https://eu.salusconnect.io"
 BASE_HEADERS = {
@@ -23,6 +23,7 @@ BASE_HEADERS = {
 
 EMAIL = "skala.lukas@gmail.com"
 PASSWORD = os.environ["SALUS_PASSWORD"]
+
 
 class Devices(enum.Enum):
     prizemie_chodba = "0.03 Prízemie chodba"
@@ -47,22 +48,6 @@ class DeviceProperties(enum.Enum):
     system_mode = "ep_9:sIT600TH:SystemMode"
     leave_network = "ep_9:sZDO:LeaveNetwork"
     online_status = "ep_9:sZDOInfo:OnlineStatus_i"
-
-
-@dataclass
-class DeviceStateWriter:
-    name: str
-    worksheet: gspread.worksheet.Worksheet
-    parsed_properties: dict[str, Any] | None = None
-
-    def add_property(self, name, value):
-        if self.parsed_properties is None:
-            self.parsed_properties = {name: value}
-        else:
-            self.parsed_properties[name] = value
-
-    def create_sample(self):
-        self.worksheet.append_row(list(self.parsed_properties.values()))
 
 
 def get_auth_header(auth_token: str) -> str:

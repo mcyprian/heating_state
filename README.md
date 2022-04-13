@@ -4,7 +4,6 @@
 
 ## TODO
 
-- API auth key
 - split to modules
 - proper API client token caching and renewal
 - configuration

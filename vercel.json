@@ -1,0 +1,8 @@
+{
+  "builds": [
+    {"src": "/heating_state/main.py", "use": "@vercel/python"}
+  ],
+  "routes": [
+    {"src": "/(.*)", "dest": "heating_state/main.py"}
+  ]
+}

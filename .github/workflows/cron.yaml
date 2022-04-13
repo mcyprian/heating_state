@@ -8,7 +8,9 @@ jobs:
     steps:
       - name: Create heating state snapshot
         run: |
-          curl --request POST \
-          --url 'https://heating-state-8b4g9skrm-mcyprian.vercel.app/snapshots'
+          curl -X 'POST' \
+          --url 'https://heating-state-h4os0zi1c-mcyprian.vercel.app/snapshots' \
+          -H 'accept: application/json' \
+          -H 'Content-Type: application/json' \
           -d '{"sheet_name": "HistoriaKureniaLukas"}'
 

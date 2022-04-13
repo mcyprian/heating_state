@@ -1,0 +1,14 @@
+name: 15-minute-cron
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create heating state snapshot
+        run: |
+          curl --request POST \
+          --url 'https://heating-state-8b4g9skrm-mcyprian.vercel.app/snapshots'
+          -d '{"sheet_name": "HistoriaKureniaLukas"}'
+

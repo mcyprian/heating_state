@@ -13,13 +13,15 @@ import gspread
 
 from fastapi import FastAPI
 
-from .models import DeviceStateWriter
+from .models import Snapshot, DeviceSnapshotWriter
 
 BASE_API_URL = "https://eu.salusconnect.io"
 BASE_HEADERS = {
     "Content-Type": "application/json",
     "User-Agent": "Heating state history script (Lukas Skala)",
 }
+
+AUTH_TOKEN = None
 
 EMAIL = "skala.lukas@gmail.com"
 PASSWORD = os.environ["SALUS_PASSWORD"]
@@ -106,11 +108,11 @@ async def get_device_properties(session: aiohttp.ClientSession) -> dict[str, Any
         return (await response.json())["datapoints"]["devices"]["device"]
 
 
-async def create_sample(
-    device_writers: dict[str, DeviceStateWriter],
+async def add_snapshot_to_worksheet(
+    device_writers: dict[str, DeviceSnapshotWriter],
     auth_token: str,
 ):
-    """Create new sample and append rows to worksheet."""
+    """Create new snapshot and append rows to worksheet."""
     async with aiohttp.ClientSession(
         headers={**BASE_HEADERS, **get_auth_header(auth_token)}
     ) as session:
@@ -138,14 +140,10 @@ async def create_sample(
 
         pprint(list(device_writer.parsed_properties.values()))
 
-        device_writer.create_sample()
+        device_writer.write_snapshot()
 
 
-app = FastAPI()
-
-
-@app.get("/")
-async def root():
+def get_gsheet(sheet_name: str) -> gspread.Spreadsheet:
     gspread_credentials = json.loads(os.environ["GSPREAD_SA"])
     gspread_credentials_private_key = os.environ["GSPREAD_SA_KEY"]
     gspread_credentials["private_key"] = gspread_credentials_private_key.replace(
@@ -153,18 +151,30 @@ async def root():
     )
 
     service_account = gspread.service_account_from_dict(gspread_credentials)
+    return service_account.open(sheet_name)
 
-    sheet = service_account.open("HistoriaKureniaLukas")
+
+app = FastAPI()
+
+
+@app.post("/snapshots")
+async def create_snapshot(snapshot: Snapshot) -> dict[str, Any]:
+    sheet = get_gsheet(snapshot.sheet_name)
 
     devices = {
-        device_name: DeviceStateWriter(device_name, sheet.worksheet(device_name))
+        device_name: DeviceSnapshotWriter(device_name, sheet.worksheet(device_name))
         for device_name in ACTIVE_DEVICES
     }
 
-    auth_token = await get_auth_token(EMAIL, PASSWORD)
+    global AUTH_TOKEN
+    if AUTH_TOKEN is None:
+        AUTH_TOKEN = await get_auth_token(EMAIL, PASSWORD)
 
     try:
-        await create_sample(devices, auth_token)
-        return {"status": "ok", "message": "sample created"}
+        await add_snapshot_to_worksheet(devices, AUTH_TOKEN)
+        return {
+            "status": "ok",
+            "message": f"snapshot added to sheet {snapshot.sheet_name}",
+        }
     except Exception as exc:
         return {"status": "error", "message": f"ERROR: {type(exc)} {exc}"}

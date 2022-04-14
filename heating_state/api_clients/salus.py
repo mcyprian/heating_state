@@ -1,59 +1,64 @@
 from __future__ import annotations
 from typing import Any
 import asyncio
-import enum
+from dataclasses import dataclass
 
 import aiohttp
+import arrow
 
-BASE_API_URL = "https://eu.salusconnect.io"
-
-BASE_HEADERS = {
-    "Content-Type": "application/json",
-    "User-Agent": "Heating state history script (Lukas Skala)",
-}
+from ..config import SALUS_EMAIL, SALUS_PASSWORD, SALUS_BASE_API_URL, SALUS_BASE_HEADERS
+from ..devices import DeviceProperties
 
 
-class DeviceProperties(enum.Enum):
-    temperature = "ep_9:sIT600TH:LocalTemperature_x100"
-    running_state = "ep_9:sIT600TH:RunningState"
+@dataclass
+class SalusAuth:
+    _access_token: str | None = None
+    expiration_time: arrow.Arrow | None = None
 
-    cloudy_setpoint = "ep_9:sIT600TH:CloudySetpoint_x100"
-    sunny_setpoint = "ep_9:sIT600TH:SunnySetpoint_x100"
-    cooling_control = "ep_9:sIT600TH:CoolingControl"
-    heating_control = "ep_9:sIT600TH:HeatingControl"
-    hold_type = "ep_9:sIT600TH:HoldType"
-    sensor_probe = "ep_9:sIT600TH:OUTSensorProbe"
-    schedule_type = "ep_9:sIT600TH:ScheduleType"
-    running_mode = "ep_9:sIT600TH:RunningMode"
-    system_mode = "ep_9:sIT600TH:SystemMode"
-    leave_network = "ep_9:sZDO:LeaveNetwork"
-    online_status = "ep_9:sZDOInfo:OnlineStatus_i"
+    async def _renew_auth_token(
+        self,
+        email: str,
+        password: str,
+    ) -> str:
+        """Obtain fresh auth token."""
+        async with aiohttp.ClientSession(headers=SALUS_BASE_HEADERS) as session:
+            auth_payload = {"user": {"email": email, "password": password}}
+
+            async with session.post(
+                f"{SALUS_BASE_API_URL}/users/sign_in.json", json=auth_payload, ssl=False
+            ) as response:
+                response.raise_for_status()
+                response_json = await response.json()
+                self._access_token = response_json["access_token"]
+                self.expiration_time = arrow.utcnow().shift(
+                    seconds=response_json["expires_in"]
+                )
+
+    @property
+    def token_expired(self) -> bool:
+        return self.expiration_time.shift(minutes=-10) < arrow.utcnow()
+
+    @property
+    async def access_token(self):
+        if self._access_token is None or self.token_expired:
+            await self._renew_auth_token(SALUS_EMAIL, SALUS_PASSWORD)
+        return self._access_token
+
+    @property
+    async def auth_header(self) -> str:
+        return {"Authorization": f"auth_token {await self.access_token}"}
 
 
-def get_auth_header(auth_token: str) -> str:
-    return {"Authorization": f"auth_token {auth_token}"}
-
-
-async def get_auth_token(
-    email: str,
-    password: str,
-) -> str:
-    """Obtain fresh auth token."""
-    async with aiohttp.ClientSession(headers=BASE_HEADERS) as session:
-        auth_payload = {"user": {"email": email, "password": password}}
-
-        async with session.post(
-            f"{BASE_API_URL}/users/sign_in.json", json=auth_payload, ssl=False
-        ) as response:
-            return (await response.json())["access_token"]
+SALUS_AUTH = SalusAuth()
 
 
 async def get_device_map(session: aiohttp.ClientSession) -> dict[str, Any]:
     """Get map of device IDs to names."""
     async with session.get(
-        f"{BASE_API_URL}/apiv1/devices.json",
+        f"{SALUS_BASE_API_URL}/apiv1/devices.json",
         ssl=False,
     ) as response:
+        response.raise_for_status()
         devices = await response.json()
 
     return {
@@ -64,7 +69,7 @@ async def get_device_map(session: aiohttp.ClientSession) -> dict[str, Any]:
 async def get_device_properties(session: aiohttp.ClientSession) -> dict[str, Any]:
     """Get map of properties for each device ID."""
     async with session.get(
-        f"{BASE_API_URL}/apiv1/groups/62774/datapoints.json",
+        f"{SALUS_BASE_API_URL}/apiv1/groups/62774/datapoints.json",
         params=[
             ("property_names[]", DeviceProperties.temperature.value),
             ("property_names[]", DeviceProperties.running_state.value),
@@ -85,10 +90,11 @@ async def get_device_properties(session: aiohttp.ClientSession) -> dict[str, Any
         return (await response.json())["datapoints"]["devices"]["device"]
 
 
-async def get_mapped_properties(auth_token: str) -> dict[str, Any]:
+async def get_mapped_properties() -> dict[str, Any]:
     """Get properties mapped to device names."""
+
     async with aiohttp.ClientSession(
-        headers={**BASE_HEADERS, **get_auth_header(auth_token)}
+        headers={**SALUS_BASE_HEADERS, **(await SALUS_AUTH.auth_header)}
     ) as session:
         device_map, device_properties = await asyncio.gather(
             *[

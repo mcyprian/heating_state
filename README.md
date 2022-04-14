@@ -4,6 +4,7 @@
 
 ## TODO
 
+- Docs root redirect
 - split to modules
 - proper API client token caching and renewal
 - configuration

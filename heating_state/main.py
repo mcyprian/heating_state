@@ -8,7 +8,7 @@ from pprint import pprint
 from typing import Any
 
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, responses
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from .models import Snapshot, DeviceSnapshotWriter
@@ -79,6 +79,11 @@ def validate_credentials(credentials: HTTPBasicCredentials) -> str:
         )
 
     return credentials.username
+
+
+@app.get("/")
+async def root():
+    return responses.RedirectResponse("/docs", status_code=302)
 
 
 @app.post("/snapshots")

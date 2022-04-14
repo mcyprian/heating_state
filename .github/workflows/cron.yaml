@@ -9,7 +9,7 @@ jobs:
       - name: Create heating state snapshot
         run: |
           curl -X 'POST' \
-          --url 'https://heating-state-h4os0zi1c-mcyprian.vercel.app/snapshots' \
+          --url 'https://heating-state-mcyprian.vercel.app/snapshots' \
           -H 'accept: application/json' \
           -H 'Content-Type: application/json' \
           -H 'Authorization: Basic ${{ secrets.API_BASIC_AUTH }}' \

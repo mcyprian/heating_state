@@ -20,7 +20,7 @@ class SalusAuth:
         email: str,
         password: str,
     ) -> str:
-        """Obtain fresh auth token."""
+        """Obtain fresh access token."""
         async with aiohttp.ClientSession(headers=SALUS_BASE_HEADERS) as session:
             auth_payload = {"user": {"email": email, "password": password}}
 
@@ -39,7 +39,7 @@ class SalusAuth:
         return self.expiration_time.shift(minutes=-10) < arrow.utcnow()
 
     @property
-    async def access_token(self):
+    async def access_token(self) -> str:
         if self._access_token is None or self.token_expired:
             await self._renew_auth_token(SALUS_EMAIL, SALUS_PASSWORD)
         return self._access_token

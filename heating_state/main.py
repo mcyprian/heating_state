@@ -45,7 +45,7 @@ security = HTTPBasic()
 
 
 @app.get("/")
-async def root():
+async def root() -> responses.RedirectResponse:
     return responses.RedirectResponse("/docs", status_code=302)
 
 

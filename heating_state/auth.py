@@ -1,6 +1,6 @@
 import secrets
 from fastapi import HTTPException
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.security import HTTPBasicCredentials
 
 from .config import BASIC_AUTH_USERS
 

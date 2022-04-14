@@ -6,4 +6,5 @@
 
 - configuration
 - get rid of globals
+- typing check
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import Any
 import json
 import os
 from functools import lru_cache
@@ -20,7 +22,7 @@ GSHEET_NAME = "HistoriaKureniaLukas"
 
 
 @lru_cache(maxsize=1)
-def compose_gspread_credentials():
+def compose_gspread_credentials() -> dict[str, Any]:
     return {
         **GSPREAD_CREADENTIALS,
         **{"private_key": GSPREAD_PRIVATE_KEY.replace("\\n", "\n")},

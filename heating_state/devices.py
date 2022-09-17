@@ -2,8 +2,17 @@ import enum
 
 
 class Devices(enum.Enum):
+    suteren = "T. Suterén 14°"
     prizemie_chodba = "0.03 Prízemie chodba"
-    suteren = "T. Suterén"
+    prizemie_obyv_kuchyna = "0.01, 0.02 Príz. obýv, kuchyňa"
+    prizemie_hostovska = "0.04 Prízemie hosťovská"
+    prizemie_kupelna = "0.06 Prízemie kúpelňa"
+    poschodie_chodba = "1.05 Posch chodba nepripoj"
+    poschodie_stanik = "1.03 Poschodie šatník"
+    poschodie_mala_detska = "1.02 Poschodie malá detská"
+    poschodie_kupelna = "1.06 Poschodie kúpeľňa"
+    poschodie_spalna = "1.04 Poschodie spálňa"
+    poschodie_detska = "1.01 Poschodie detská veľká"
 
 
 class DeviceProperties(enum.Enum):

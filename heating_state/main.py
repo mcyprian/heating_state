@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 from pprint import pprint
 
 from fastapi import FastAPI, Depends, HTTPException, responses
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-import gspread
+import gspread_asyncio
 
 from .devices import GROUND_FLOOR_DEVICES, FIRST_FLOOR_DEVIDES
 from .config import GSHEET_NAME
@@ -19,6 +20,8 @@ async def add_snapshot_to_worksheet(
 ):
     """Create new snapshot and append rows to worksheet."""
     device_properties = await salus.get_mapped_properties()
+
+    tasks = []
 
     for device in device_properties:
         device_name = device["name"]
@@ -35,9 +38,11 @@ async def add_snapshot_to_worksheet(
 
             device_writer.add_property(device_property["name"], value)
 
-        pprint(list(device_writer.parsed_properties.values()))
+        pprint(device_writer.parsed_properties)
 
-        device_writer.write_snapshot()
+        tasks.append(device_writer.write_snapshot())
+
+    asyncio.gather(*tasks, return_exceptions=True)
 
 
 app = FastAPI()
@@ -53,7 +58,7 @@ async def root() -> responses.RedirectResponse:
 async def create_snapshot(
     snapshot: Snapshot,
     credentials: HTTPBasicCredentials = Depends(security),
-    sheet: gspread.Spreadsheet = Depends(gsheet.get_gsheet),
+    sheet: gspread_asyncio.AsyncioGspreadSpreadsheet = Depends(gsheet.get_gsheet),
 ) -> dict[str, Any]:
     validate_credentials(credentials)
 
@@ -64,7 +69,9 @@ async def create_snapshot(
     )
 
     devices = {
-        device_name: DeviceSnapshotWriter(device_name, sheet.worksheet(device_name))
+        device_name: DeviceSnapshotWriter(
+            device_name, await sheet.worksheet(device_name)
+        )
         for device_name in (device.value for device in devices_to_check)
     }
 

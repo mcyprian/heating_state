@@ -238,6 +238,18 @@ google-auth = ">=1.12.0"
 google-auth-oauthlib = ">=0.4.1"
 
 [[package]]
+name = "gspread-asyncio"
+version = "1.7.0"
+description = "asyncio wrapper for burnash's Google Spreadsheet API library, gspread"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+gspread = ">=5.5.0,<5.6.0"
+requests = ">=2.0.0,<3.0.0"
+
+[[package]]
 name = "h11"
 version = "0.13.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
@@ -560,7 +572,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "2634961c3bbd0139545530595bc317972b05705d4b78bb21192ab2384f584bfe"
+content-hash = "34bd6c6b74c8d80d0fbffc08650e18a72501db96c6f9a0e7e4b76a94fe9f2599"
 
 [metadata.files]
 aiohttp = [
@@ -782,6 +794,10 @@ google-auth-oauthlib = [
 gspread = [
     {file = "gspread-5.5.0-py3-none-any.whl", hash = "sha256:787b5fab9dd61a7d6d84af73356d7ff905cd3978438e528dc66dc8a9407fb851"},
     {file = "gspread-5.5.0.tar.gz", hash = "sha256:8620e987e5340315f2b8d8d26cf97e4736a84b3325a17c7d9bcff70525dc3003"},
+]
+gspread-asyncio = [
+    {file = "gspread_asyncio-1.7.0-py3-none-any.whl", hash = "sha256:761cadf198b787b63a9e19bf12f273112b8fc6ed6a4d9bd7407b3c9fbbbcbf43"},
+    {file = "gspread_asyncio-1.7.0.tar.gz", hash = "sha256:b71fda1a5f5772d1dd2a441e1937e085b9038efd9fd203a750265780135e6685"},
 ]
 h11 = [
     {file = "h11-0.13.0-py3-none-any.whl", hash = "sha256:8ddd78563b633ca55346c8cd41ec0af27d3c79931828beffb46ce70a379e7442"},

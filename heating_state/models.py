@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import enum
 
 import arrow
-import gspread
+import gspread_asyncio
 from pydantic import BaseModel
 
 
@@ -23,7 +23,7 @@ class Snapshot(BaseModel):
 @dataclass
 class DeviceSnapshotWriter:
     name: str
-    worksheet: gspread.worksheet.Worksheet
+    worksheet: gspread_asyncio.AsyncioGspreadWorksheet
     parsed_properties: dict[str, Any] | None = None
 
     @staticmethod
@@ -40,5 +40,5 @@ class DeviceSnapshotWriter:
         else:
             self.parsed_properties[name] = value
 
-    def write_snapshot(self):
-        self.worksheet.append_row(list(self.parsed_properties.values()))
+    async def write_snapshot(self):
+        await self.worksheet.append_row(list(self.parsed_properties.values()))

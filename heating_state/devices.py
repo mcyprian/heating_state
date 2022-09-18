@@ -8,11 +8,29 @@ class Devices(enum.Enum):
     prizemie_hostovska = "0.04 Prízemie hosťovská"
     prizemie_kupelna = "0.06 Prízemie kúpelňa"
     poschodie_chodba = "1.05 Posch chodba nepripoj"
-    poschodie_stanik = "1.03 Poschodie šatník"
+    poschodie_satnik = "1.03 Poschodie šatník"
     poschodie_mala_detska = "1.02 Poschodie malá detská"
     poschodie_kupelna = "1.06 Poschodie kúpeľňa"
     poschodie_spalna = "1.04 Poschodie spálňa"
     poschodie_detska = "1.01 Poschodie detská veľká"
+
+
+GROUND_FLOOR_DEVICES = (
+    Devices.suteren,
+    Devices.prizemie_chodba,
+    Devices.prizemie_obyv_kuchyna,
+    Devices.prizemie_hostovska,
+    Devices.prizemie_kupelna,
+)
+
+FIRST_FLOOR_DEVIDES = (
+    Devices.poschodie_chodba,
+    Devices.poschodie_satnik,
+    Devices.poschodie_mala_detska,
+    Devices.poschodie_kupelna,
+    Devices.poschodie_spalna,
+    Devices.poschodie_detska,
+)
 
 
 class DeviceProperties(enum.Enum):

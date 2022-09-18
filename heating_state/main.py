@@ -7,9 +7,9 @@ from fastapi import FastAPI, Depends, HTTPException, responses
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import gspread
 
-from .devices import Devices
+from .devices import GROUND_FLOOR_DEVICES, FIRST_FLOOR_DEVIDES
 from .config import GSHEET_NAME
-from .models import Snapshot, DeviceSnapshotWriter
+from .models import Snapshot, DeviceSnapshotWriter, FloorName
 from .api_clients import salus, gsheet
 from .auth import validate_credentials
 
@@ -57,9 +57,15 @@ async def create_snapshot(
 ) -> dict[str, Any]:
     validate_credentials(credentials)
 
+    devices_to_check = (
+        GROUND_FLOOR_DEVICES
+        if snapshot.floor_name == FloorName.ground.value
+        else FIRST_FLOOR_DEVIDES
+    )
+
     devices = {
         device_name: DeviceSnapshotWriter(device_name, sheet.worksheet(device_name))
-        for device_name in (device.value for device in Devices)
+        for device_name in (device.value for device in devices_to_check)
     }
 
     try:

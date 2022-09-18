@@ -1,14 +1,23 @@
 from __future__ import annotations
 from typing import Any
 from dataclasses import dataclass
+import enum
 
 import arrow
 import gspread
 from pydantic import BaseModel
 
 
+class FloorName(enum.Enum):
+    ground = "ground_floor"
+    first = "first_floor"
+
+
 class Snapshot(BaseModel):
-    sheet_name: str
+    floor_name: FloorName
+
+    class Config:
+        use_enum_values = True
 
 
 @dataclass

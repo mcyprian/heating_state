@@ -1,4 +1,4 @@
-name: 15-minute-cron
+name: poschodie_spalna-cron
 on:
   schedule:
     - cron: '*/5 * * * *'

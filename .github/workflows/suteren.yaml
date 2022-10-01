@@ -1,0 +1,17 @@
+name: 15-minute-cron
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create heating state snapshot
+        run: |
+          curl -X 'POST' \
+          --url 'https://heating-state-mcyprian.vercel.app/snapshots' \
+          -H 'accept: application/json' \
+          -H 'Content-Type: application/json' \
+          -H 'Authorization: Basic ${{ secrets.API_BASIC_AUTH }}' \
+          -d '{"device_name": "T. Suterén 14°"}'
+

@@ -7,7 +7,7 @@ import aiohttp
 import arrow
 
 from ..config import SALUS_EMAIL, SALUS_PASSWORD, SALUS_BASE_API_URL, SALUS_BASE_HEADERS
-from ..devices import DeviceProperties
+from ..models import DeviceProperties
 
 
 @dataclass

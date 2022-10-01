@@ -8,9 +8,8 @@ from fastapi import FastAPI, Depends, HTTPException, responses
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import gspread_asyncio
 
-from .devices import GROUND_FLOOR_DEVICES, FIRST_FLOOR_DEVIDES
 from .config import GSHEET_NAME
-from .models import Snapshot, DeviceSnapshotWriter, FloorName
+from .models import Snapshot, DeviceSnapshotWriter
 from .api_clients import salus, gsheet
 from .auth import validate_credentials
 
@@ -62,24 +61,18 @@ async def create_snapshot(
 ) -> dict[str, Any]:
     validate_credentials(credentials)
 
-    devices_to_check = (
-        GROUND_FLOOR_DEVICES
-        if snapshot.floor_name == FloorName.ground.value
-        else FIRST_FLOOR_DEVIDES
-    )
-
     devices = {
         device_name: DeviceSnapshotWriter(
             device_name, await sheet.worksheet(device_name)
         )
-        for device_name in (device.value for device in devices_to_check)
+        for device_name in (snapshot.device_name,)
     }
 
     try:
         await add_snapshot_to_worksheet(devices)
         return {
             "status": "ok",
-            "message": f"snapshot added to sheet {GSHEET_NAME}",
+            "message": f"snapshot for {snapshot.device_name} added to sheet {GSHEET_NAME}",
         }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"ERROR: {type(exc)} {exc}")
